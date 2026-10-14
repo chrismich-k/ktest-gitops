@@ -1,0 +1,41 @@
+# Example environment: copy this directory per environment and replace
+# the values marked CHANGE. Same namespace and host as the frontend.
+# The Secret "api-trino" is not part of this overlay, see README.md.
+apiVersion: kustomize.config.k8s.io/v1beta1
+kind: Kustomization
+
+resources:
+  - ../../base
+
+namespace: ktest-demo # CHANGE
+
+images:
+  - name: ktest-api
+    newName: registry.example.com/ktest/api # CHANGE
+    newTag: latest # CHANGE: better a fixed tag, e.g. sha-1a2b3c4
+
+configMapGenerator:
+  - name: api-config
+    literals:
+      - API_TRINO_HOST=trino.example.com # CHANGE
+      - API_TRINO_PORT=443
+      - API_TRINO_HTTP_SCHEME=https
+      - API_TRINO_AUTH_METHOD=ldap # or "none" (user only, no password)
+      - API_TRINO_CATALOG=iceberg
+      - API_DATAWARE_SCHEMA=dataware_api
+
+patches:
+  - target:
+      kind: Ingress
+      name: api-ingress
+    patch: |-
+      - op: replace
+        path: /spec/rules/0/host
+        value: ktest.example.com # CHANGE
+      - op: replace
+        path: /spec/tls/0/hosts/0
+        value: ktest.example.com # CHANGE
+      # CHANGE or remove: same ingress class as the frontend
+      - op: add
+        path: /spec/ingressClassName
+        value: traefik

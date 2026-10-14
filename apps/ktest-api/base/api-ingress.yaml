@@ -1,0 +1,28 @@
+# /api on the frontend's host: same origin for the browser, no CORS. The
+# ingress controller merges this with the frontend's Ingress for the same
+# host; the longer path prefix wins. The TLS certificate is requested via
+# the frontend's Ingress (cert-manager annotation there), this one only
+# references its secret - a second annotation would make two Certificates
+# compete for the same secret.
+# The host is a placeholder (.invalid never resolves, RFC 2606): every
+# overlay must patch it.
+apiVersion: networking.k8s.io/v1
+kind: Ingress
+metadata:
+  name: api-ingress
+spec:
+  tls:
+    - hosts:
+        - ktest.invalid
+      secretName: ktest-tls-cert
+  rules:
+    - host: ktest.invalid
+      http:
+        paths:
+          - path: /api
+            pathType: Prefix
+            backend:
+              service:
+                name: api-service
+                port:
+                  name: http

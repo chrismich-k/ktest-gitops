@@ -1,0 +1,24 @@
+# The host is a placeholder (.invalid never resolves, RFC 2606): every
+# overlay must patch it. One namespace per environment, so the TLS secret
+# name can stay the same everywhere. The API's Ingress (apps/ktest-api)
+# serves /api on the same host and references the same TLS secret.
+apiVersion: networking.k8s.io/v1
+kind: Ingress
+metadata:
+  name: frontend-ingress
+spec:
+  tls:
+    - hosts:
+        - ktest.invalid
+      secretName: ktest-tls-cert
+  rules:
+    - host: ktest.invalid
+      http:
+        paths:
+          - path: /
+            pathType: Prefix
+            backend:
+              service:
+                name: frontend-service
+                port:
+                  name: http

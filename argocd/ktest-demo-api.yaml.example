@@ -1,0 +1,23 @@
+# Argo CD Application for the demo overlay of ktest-api. Copy it to a
+# .yaml file, replace the values marked CHANGE and apply it:
+#   kubectl apply -f argocd/ktest-demo-api.yaml
+apiVersion: argoproj.io/v1alpha1
+kind: Application
+metadata:
+  name: ktest-demo-api
+  namespace: argocd
+spec:
+  project: default
+  source:
+    repoURL: https://github.com/your-account/ktest-gitops.git # CHANGE
+    targetRevision: HEAD
+    path: apps/ktest-api/overlays/demo
+  destination:
+    server: https://kubernetes.default.svc
+    namespace: ktest-demo # CHANGE: as in the overlay
+  syncPolicy:
+    automated:
+      prune: true
+      selfHeal: true
+    syncOptions:
+      - CreateNamespace=true

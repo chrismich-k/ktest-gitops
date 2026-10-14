@@ -1,0 +1,15 @@
+# ktest API (FastAPI, ktest-app/api). Overlays must provide:
+#   - namespace and the image (name "ktest-api" -> registry/tag)
+#   - ConfigMap "api-config": API_TRINO_HOST, API_TRINO_PORT,
+#     API_TRINO_HTTP_SCHEME, API_TRINO_AUTH_METHOD, API_TRINO_CATALOG,
+#     API_DATAWARE_SCHEMA
+#   - Secret "api-trino": API_TRINO_USER, API_TRINO_PASSWORD (not in git
+#     as plain text: create it by hand or e.g. via SOPS/KSOPS)
+#   - Ingress host and TLS host (placeholder ktest.invalid)
+apiVersion: kustomize.config.k8s.io/v1beta1
+kind: Kustomization
+
+resources:
+  - api-deployment.yaml
+  - api-service.yaml
+  - api-ingress.yaml

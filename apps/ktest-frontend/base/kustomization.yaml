@@ -1,0 +1,12 @@
+# ktest frontend (React SPA served by nginx, ktest-app/frontend).
+# Overlays must provide:
+#   - namespace and the image (name "ktest-frontend" -> registry/tag)
+#   - Ingress host and TLS host (placeholder ktest.invalid)
+# and may set the ingress class and a cert-manager issuer annotation.
+apiVersion: kustomize.config.k8s.io/v1beta1
+kind: Kustomization
+
+resources:
+  - frontend-deployment.yaml
+  - frontend-service.yaml
+  - frontend-ingress.yaml

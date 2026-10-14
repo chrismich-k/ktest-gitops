@@ -1,0 +1,36 @@
+# Example environment: copy this directory per environment and replace
+# the values marked CHANGE.
+apiVersion: kustomize.config.k8s.io/v1beta1
+kind: Kustomization
+
+resources:
+  - ../../base
+
+namespace: ktest-demo # CHANGE
+
+images:
+  - name: ktest-frontend
+    newName: registry.example.com/ktest/frontend # CHANGE
+    newTag: latest # CHANGE: better a fixed tag, e.g. sha-1a2b3c4
+
+patches:
+  - target:
+      kind: Ingress
+      name: frontend-ingress
+    patch: |-
+      - op: replace
+        path: /spec/rules/0/host
+        value: ktest.example.com # CHANGE
+      - op: replace
+        path: /spec/tls/0/hosts/0
+        value: ktest.example.com # CHANGE
+      # CHANGE or remove: ingress class of your cluster (default class
+      # if unset)
+      - op: add
+        path: /spec/ingressClassName
+        value: traefik
+      # CHANGE or remove: cert-manager ClusterIssuer for the certificate
+      - op: add
+        path: /metadata/annotations
+        value:
+          cert-manager.io/cluster-issuer: letsencrypt
