@@ -1,0 +1,29 @@
+# One Dagster code location: a gRPC server ("dagster api grpc") serving
+# the Definitions of a container image, for a Dagster installed with the
+# official Helm chart (K8sRunLauncher, workspace from an external
+# ConfigMap, see apps/dagster-workspace). Overlays must provide:
+#   - namespace: the Dagster namespace (the run Jobs start there and need
+#     the code location's ConfigMap and Secret)
+#   - namePrefix "<name>-" and the label app.kubernetes.io/instance: <name>
+#     (with includeSelectors), <name> as in the workspace entry's host
+#   - the image (name "dagster-code-location" -> registry/tag)
+#   - ConfigMap "code-location-config": DAGSTER_MODULE_NAME and the
+#     non-secret configuration of the code location
+#   - Secret "<name>-code-location-env": credentials (not in git as plain
+#     text: create it by hand or e.g. via SOPS/KSOPS)
+#   - imagePullSecrets for a private registry
+apiVersion: kustomize.config.k8s.io/v1beta1
+kind: Kustomization
+
+resources:
+  - code-location-deployment.yaml
+  - code-location-service.yaml
+  - code-location-env-ref.yaml
+
+configurations:
+  - name-references.yaml
+
+labels:
+  - pairs:
+      app.kubernetes.io/name: dagster-code-location
+    includeSelectors: true

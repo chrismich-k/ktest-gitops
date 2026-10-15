@@ -1,0 +1,56 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: code-location
+spec:
+  replicas: 1
+  template:
+    spec:
+      containers:
+        - name: code-location
+          # placeholder, set by the overlay (images:)
+          image: dagster-code-location
+          command: ["dagster", "api", "grpc", "--host", "0.0.0.0", "--port", "3030"]
+          # from ConfigMap code-location-config
+          args: ["--module-name", "$(DAGSTER_MODULE_NAME)"]
+          ports:
+            - name: grpc
+              containerPort: 3030
+          env:
+            # image of the run Jobs the K8sRunLauncher starts; replaced by
+            # the overlay's images: like the container image
+            - name: DAGSTER_CURRENT_IMAGE
+              value: dagster-code-location
+            # final names (prefix, hash) via name-references.yaml
+            - name: CODE_LOCATION_CONFIG_MAP
+              value: code-location-config
+            - name: CODE_LOCATION_ENV_SECRET
+              value: code-location-env
+            # the run Jobs get the same configuration and credentials;
+            # completed Jobs are removed after an hour
+            - name: DAGSTER_CONTAINER_CONTEXT
+              value: >-
+                {"k8s": {"env_config_maps": ["$(CODE_LOCATION_CONFIG_MAP)"],
+                "env_secrets": ["$(CODE_LOCATION_ENV_SECRET)"],
+                "run_k8s_config": {"job_spec_config": {"ttl_seconds_after_finished": 3600}}}}
+            # schedules and sensors are evaluated in this pod, with the
+            # Postgres storage of the Dagster instance (secret of the chart)
+            - name: DAGSTER_PG_PASSWORD
+              valueFrom:
+                secretKeyRef:
+                  name: dagster-postgresql-secret
+                  key: postgresql-password
+          envFrom:
+            - configMapRef:
+                name: code-location-config
+            - secretRef:
+                name: code-location-env
+          readinessProbe:
+            exec:
+              command: ["dagster", "api", "grpc-health-check", "--port", "3030"]
+            periodSeconds: 20
+            timeoutSeconds: 10
+          resources:
+            requests:
+              cpu: 50m
+              memory: 256Mi

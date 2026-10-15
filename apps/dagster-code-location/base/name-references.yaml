@@ -1,0 +1,17 @@
+# Lets the overlay's transformers also update env values of the Deployment
+# that hold an image or a resource name: the overlay's images: sets
+# DAGSTER_CURRENT_IMAGE, namePrefix and the ConfigMap hash suffix reach
+# CODE_LOCATION_CONFIG_MAP and CODE_LOCATION_ENV_SECRET. Only values equal
+# to an image or resource name are changed.
+images:
+  - kind: Deployment
+    path: spec/template/spec/containers/env/value
+nameReference:
+  - kind: ConfigMap
+    fieldSpecs:
+      - kind: Deployment
+        path: spec/template/spec/containers/env/value
+  - kind: Secret
+    fieldSpecs:
+      - kind: Deployment
+        path: spec/template/spec/containers/env/value

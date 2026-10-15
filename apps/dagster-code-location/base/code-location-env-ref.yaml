@@ -1,0 +1,9 @@
+# Not deployed (local-config): the Secret comes from elsewhere (by hand,
+# SOPS/KSOPS). This placeholder only makes namePrefix rename the
+# references to it, so they read "<name>-code-location-env".
+apiVersion: v1
+kind: Secret
+metadata:
+  name: code-location-env
+  annotations:
+    config.kubernetes.io/local-config: "true"
