@@ -1,0 +1,44 @@
+# Example: the "dataware" code location of ktest-app (dagster/dataware).
+# Copy this directory per environment and replace the values marked
+# CHANGE; the workspace entry is in apps/dagster-workspace. The Secret
+# "dataware-code-location-env" is not part of this overlay, see README.md:
+#   DATAWARE_S3_ACCESS_KEY_ID, DATAWARE_S3_SECRET_ACCESS_KEY,
+#   DATAWARE_TRINO_USER, DATAWARE_TRINO_PASSWORD
+apiVersion: kustomize.config.k8s.io/v1beta1
+kind: Kustomization
+
+resources:
+  - ../../base
+
+namespace: dagster # CHANGE: the namespace of the Dagster Helm release
+namePrefix: dataware-
+
+labels:
+  - pairs:
+      app.kubernetes.io/instance: dataware
+    includeSelectors: true
+
+images:
+  - name: dagster-code-location
+    newName: ghcr.io/chrismich-k/ktest-app/dagster-dataware # CHANGE if using your own built image
+    newTag: latest # or a fixed tag, e.g. sha-1a2b3c4
+
+configMapGenerator:
+  - name: code-location-config
+    literals:
+      - DAGSTER_MODULE_NAME=ktest.dataware.definitions
+      - DATAWARE_ICEBERG_REST_URI=http://iceberg-rest.example.svc.cluster.local:9001/iceberg # CHANGE
+      - DATAWARE_ICEBERG_WAREHOUSE=s3a://iceberg-warehouse/warehouse # CHANGE
+      - DATAWARE_ICEBERG_NAMESPACE=dataware
+      - DATAWARE_ICEBERG_NAMESPACE_PROD=dataware
+      - DATAWARE_S3_ENDPOINT=http://s3.example.svc.cluster.local:9000 # CHANGE
+      # dbt on Trino
+      - DATAWARE_DBT_TARGET=prod
+      - DATAWARE_TRINO_HOST=trino.example.com # CHANGE
+      - DATAWARE_TRINO_PORT=443
+      - DATAWARE_TRINO_HTTP_SCHEME=https
+      - DATAWARE_TRINO_AUTH_METHOD=ldap # or "none" (user only, no password)
+      - DATAWARE_TRINO_CATALOG=iceberg
+      - DATAWARE_TRINO_SCHEMA_PROD=dataware
+      - DATAWARE_SMARD_SCHEMA=smard
+      - DATAWARE_TRADINGHUB_EU_SCHEMA=tradinghub_eu

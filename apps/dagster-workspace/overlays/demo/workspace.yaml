@@ -1,0 +1,15 @@
+# host: <name>-code-location.<namespace>.svc.cluster.local, port of the
+# base; location_name is shown in the UI and must not contain "-"
+load_from:
+  - grpc_server:
+      host: smard-code-location.dagster.svc.cluster.local # CHANGE: namespace
+      port: 3030
+      location_name: smard
+  - grpc_server:
+      host: tradinghub-eu-code-location.dagster.svc.cluster.local # CHANGE: namespace
+      port: 3030
+      location_name: tradinghub_eu
+  - grpc_server:
+      host: dataware-code-location.dagster.svc.cluster.local # CHANGE: namespace
+      port: 3030
+      location_name: dataware

@@ -1,0 +1,19 @@
+# Example: the workspace of the Dagster webserver and daemon, one entry per
+# code location (apps/dagster-code-location). The Helm release reads it as
+# external ConfigMap:
+#   dagster-user-deployments: {enabled: true, enableSubchart: false}
+#   dagsterWebserver: {workspace: {enabled: true, servers: [], externalConfigmap: dagster-workspace}}
+# Webserver and daemon read it at startup: after a change, reload the
+# code locations in the UI or restart both Deployments.
+apiVersion: kustomize.config.k8s.io/v1beta1
+kind: Kustomization
+
+namespace: dagster # CHANGE: the namespace of the Dagster Helm release
+
+configMapGenerator:
+  - name: dagster-workspace
+    files:
+      - workspace.yaml
+    options:
+      # fixed name, referenced by the Helm release
+      disableNameSuffixHash: true
